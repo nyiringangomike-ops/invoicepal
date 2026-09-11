@@ -537,7 +537,7 @@ $('f-currency').onchange = function(){
 $('btn-upgrade').onclick = function(e){
   e.preventDefault();
   if(STRIPE_URL==='#'){
-    showModal(`<h2>Upgrade to Pro</h2><p>To set up payments, create a Stripe Payment Link at <a href="https://dashboard.stripe.com/payment-links" target="_blank">dashboard.stripe.com/payment-links</a> with a success redirect URL of <code>your-domain.com/app.html?upgrade=success</code>, then paste the link into the STRIPE_URL constant in <strong>js/app.js</strong>.</p><p>During checkout, collect $9/month recurring. The user will be automatically unlocked on return.</p>`);
+    showModal(`<h2>Upgrade to Pro</h2><p>To set up payments, create a Stripe Payment Link at <a href="https://dashboard.stripe.com/payment-links" target="_blank">dashboard.stripe.com/payment-links</a> with a success redirect URL of <code>https://nyiringangomike-ops.github.io/invoicepal/app.html?upgrade=success</code>, then paste the link into the STRIPE_URL constant in <strong>js/app.js</strong>.</p><p>During checkout, collect $9/month recurring. The user will be automatically unlocked on return.</p>`);
     return;
   }
   location.href = STRIPE_URL;
