@@ -38,30 +38,42 @@ automatically (needs no setup; each push triggers a build).
 
 ---
 
-## 2. Turn on billing (Stripe, ~15 minutes)
+## 2. Turn on billing (no Stripe needed — Ko-fi / Buy Me a Coffee, ~10 minutes)
 
-1. Create a Stripe account: https://dashboard.stripe.com/register
-2. **Payments → Payment Links → Create Payment Link**.
-3. Add a **Recurring** price: `$9 / month` → create a *Subscription* type.
-4. Set the price name and pick a checkout branding image.
-5. In **Payment links → Click after conversion**, set a **Redirect** URL to:
-   ```
-   https://your-site-url/app.html?upgrade=success
-   ```
-6. **Create link**, then copy the `checkout.stripe.com` URL.
-7. Open `js/app.js` and replace the placeholder with the real URL:
+This app is 100% static, so we use a payment *link* instead of a checkout API.
+Two great options for $9/mo recurring on a static site:
+
+### Option A — Ko-fi (recommended, ~10 min)
+1. Create a free account at **ko-fi.com** (your username becomes a page, e.g.
+   `ko-fi.com/yourname`).
+2. Go to your page settings → enable **Membership**.
+3. Set price to **$9.00 / month** (you can also add a thank-you message with the
+   unlock code here — see note at the bottom).
+4. Copy your Ko-fi page URL (or the direct membership upgrade link).
+
+### Option B — Buy Me a Coffee
+1. buymeacoffee.com → **Settings → Memberships** → set $9/month.
+2. Copy your profile URL.
+
+### Wire it into the app
+1. Open `js/app.js` and set:
    ```js
-   const STRIPE_URL = '#';  // →  const STRIPE_URL = 'https://buy.stripe.com/yourlink';
+   const PURCHASE_URL = 'https://ko-fi.com/yourname';   // your page/link
+   const UNLOCK_CODE  = 'IP-PRO-2026';                  // a secret only you know
+   const PRICE_LABEL  = '$9/mo';
    ```
-8. Commit & push — GitHub Pages redeploys automatically.
+2. Commit & push — GitHub Pages redeploys automatically.
 
-Now the **Upgrade** button makes a real $9/mo purchase; after paying, customers land
-back on the app unlocked (`Pro ✓`, unlimited invoices, no watermark).
+### How unlocking works (not honor-based)
+A subscriber pays on Ko-fi → lands back on `app.html` → clicks **Upgrade** →
+enters the **unlock code** you shared in your Ko-fi welcome/thank-you message
+(or you email it). Match = `Pro ✓` permanently in their browser.
+The code is stored only in `js/app.js`; free users never see it until they pay.
 
-> **Honesty caveat (MVP):** unlocking is honor-based (a URL param sets Pro locally,
-> no server check). For a paid product, upgrade to a real backend with a Stripe
-> webhook to verify payments. This MVP is a validation tool — it proves demand
-> before you invest in a backend.
+> **Why not Stripe?** Stripe needs a server/webhook to verify payments. On a
+> no-backend site, Ko-fi/Buy me a coffee handle the payments and you deliver the
+> code by email. Cheap, compliant, and 100% static. You can upgrade to Stripe +
+> a small backend (Cloudflare Worker/Node) once you have paying customers.
 
 ---
 
@@ -69,7 +81,7 @@ back on the app unlocked (`Pro ✓`, unlimited invoices, no watermark).
 
 - **Free:** 5 invoices, full features, "Made with InvoicePal" watermark on PDFs.
 - **Pro:** $9/mo — unlimited invoices, no watermark, logo, custom numbering, email
-  support. (LocalStorage flag; see above.)
+  support. (Local flag unlocked by code; see above.)
 
 $9/mo is deliberately low friction. You need roughly **20–40 signups** to hit
 ~$200–360/mo MRR. Optimize price later using the two-tier trick below.

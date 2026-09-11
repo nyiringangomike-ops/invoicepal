@@ -1,7 +1,9 @@
 (function(){
 'use strict';
 
-const STRIPE_URL = '#';
+const PURCHASE_URL = '#';
+const UNLOCK_CODE = '';
+const PRICE_LABEL = '$9/mo';
 const FREE_LIMIT = 5;
 const CURRENCY_SYM = {USD:'$',EUR:'€',GBP:'£',CAD:'C$',AUD:'A$',INR:'₹',JPY:'¥',CNY:'¥',BRL:'R$',MXN:'MX$',CHF:'CHF',NZD:'NZ$',SGD:'S$',SEK:'kr',NOK:'kr',DKK:'kr',PLN:'zł',AED:'AED'};
 
@@ -45,12 +47,26 @@ function calc(inv){
 function checkUpgrade(){
   const p = new URLSearchParams(location.search);
   if(p.get('upgrade')==='success'){
-    plan.tier = 'pro';
-    savePlan();
     history.replaceState(null,'',location.pathname);
-    showModal('<h2>Welcome to Pro!</h2><p>Your account is now unlocked. Unlimited invoices, no watermark — enjoy InvoicePal.</p><button class="btn btn-primary" onclick="closeModal()">Start building invoices</button>');
+    showModal(`<h2>Almost there!</h2><p>Thanks for subscribing to Pro. To unlock unlimited invoices, enter the unlock code you received in your welcome email. If you didn't get one, contact support.</p><div class="field"><label>Unlock code</label><input id="unlock-input" placeholder="e.g. IP-PRO-XXXX"></div><button class="btn btn-primary" onclick="doUnlock()">Unlock Pro</button>`);
   }
 }
+
+window.doUnlock = function(code){
+  const v = typeof code === 'string' ? code : ($('unlock-input')&&$('unlock-input').value||'');
+  const entered = String(v||'').trim().toLowerCase();
+  const expected = String(UNLOCK_CODE||'').trim().toLowerCase();
+  if(expected && entered===expected){
+    plan.tier='pro';
+    savePlan();
+    closeModal();
+    renderPlanBadge();
+    renderPlanHint();
+    showModal('<h2>Welcome to Pro! ✓</h2><p>Your account is now unlocked. Unlimited invoices, no watermark, enjoy InvoicePal.</p><button class="btn btn-primary" onclick="closeModal()">Start building invoices</button>');
+  }else{
+    showModal(`<h2>Invalid code</h2><p>The unlock code didn't match. Check your welcome email, or subscribe first to receive one.</p><button class="btn btn-primary" onclick="closeModal()">OK</button> ${PURCHASE_URL!=='#'?`<a class="btn btn-ghost" href="${PURCHASE_URL}" target="_blank">Subscribe</a>`:''}`);
+  }
+};
 
 function isOverLimit(){ return plan.tier!=='pro' && invoices.length>=FREE_LIMIT; }
 
@@ -67,8 +83,13 @@ function renderPlanHint(){
   const left = FREE_LIMIT-invoices.length;
   h.hidden=false;
   h.innerHTML = left===0
-    ? `<strong>You've used all ${FREE_LIMIT} free invoices.</strong> Upgrade to Pro for unlimited invoices, no watermark, and more. <a href="${STRIPE_URL}" style="color:inherit;font-weight:700;text-decoration:underline">Upgrade now →</a>`
-    : `You have <strong>${left}</strong> free invoice${left>1?'s':''} remaining. <a href="${STRIPE_URL}" style="color:inherit;text-decoration:underline">Upgrade for unlimited</a>.`;
+    ? `<strong>You've used all ${FREE_LIMIT} free invoices.</strong> Upgrade to Pro for unlimited invoices, no watermark, and more. ${upgradeLink('Upgrade now →')}`
+    : `You have <strong>${left}</strong> free invoice${left>1?'s':''} remaining. ${upgradeLink('Upgrade for unlimited')}.`;
+}
+
+function upgradeLink(text){
+  if(PURCHASE_URL!=='#') return `<a href="${PURCHASE_URL}" style="color:inherit;font-weight:700;text-decoration:underline" target="_blank">${text}</a>`;
+  return `<a href="#" onclick="return upgradeClick()" style="color:inherit;font-weight:700;text-decoration:underline">${text}</a>`;
 }
 
 window.openEditor = function(id){ openEditor(id); };
@@ -140,7 +161,7 @@ function seedDemo(){
 
 function newInvoice(){
   if(isOverLimit()){
-    showModal(`<h2>Free plan limit reached</h2><p>You've created ${FREE_LIMIT} invoices on the free plan. Upgrade to Pro for unlimited invoices, no watermark, and more features.</p><a class="btn btn-primary" href="${STRIPE_URL}">Upgrade to Pro — $9/mo</a>`);
+    showModal(`<h2>Free plan limit reached</h2><p>You've created ${FREE_LIMIT} invoices on the free plan. Upgrade to Pro for unlimited invoices, no watermark, and more features.</p><button class="btn btn-primary" onclick="upgradeClick()">Upgrade to Pro — ${PRICE_LABEL}</button>`);
     return;
   }
   const id = uid();
@@ -283,7 +304,7 @@ window.deleteInv = function(id){
 
 window.duplicateInv = function(id){
   if(isOverLimit()){
-    showModal(`<h2>Free plan limit reached</h2><p>Upgrade to Pro for unlimited invoices.</p><a class="btn btn-primary" href="${STRIPE_URL}">Upgrade — $9/mo</a>`);
+    showModal(`<h2>Free plan limit reached</h2><p>Upgrade to Pro for unlimited invoices.</p><button class="btn btn-primary" onclick="upgradeClick()">Upgrade — ${PRICE_LABEL}</button>`);
     return;
   }
   const src = invoices.find(i=>i.id===id);
@@ -534,14 +555,19 @@ $('f-currency').onchange = function(){
 };
 ['f-tax','f-discount'].forEach(function(id){ $(id).oninput = updateSummary; });
 
-$('btn-upgrade').onclick = function(e){
-  e.preventDefault();
-  if(STRIPE_URL==='#'){
-    showModal(`<h2>Upgrade to Pro</h2><p>To set up payments, create a Stripe Payment Link at <a href="https://dashboard.stripe.com/payment-links" target="_blank">dashboard.stripe.com/payment-links</a> with a success redirect URL of <code>https://nyiringangomike-ops.github.io/invoicepal/app.html?upgrade=success</code>, then paste the link into the STRIPE_URL constant in <strong>js/app.js</strong>.</p><p>During checkout, collect $9/month recurring. The user will be automatically unlocked on return.</p>`);
+window.upgradeClick = function(){
+  if(PURCHASE_URL !== '#'){
+    location.href = PURCHASE_URL;
     return;
   }
-  location.href = STRIPE_URL;
+  showModal(`<h2>Set up Pro billing</h2><p>Three easy ways to charge ${PRICE_LABEL} for Pro with zero backend:</p>
+    <p><strong>1. Ko-fi (recommended)</strong> — create a free account at ko-fi.com, enable a <em>Membership</em>, set the amount to $9/month, then paste your page URL into <code>PURCHASE_URL</code> in <strong>js/app.js</strong>. Each member gets a welcome email where you send your <code>UNLOCK_CODE</code>.</p>
+    <p><strong>2. Buy Me a Coffee</strong> — buymeacoffee.com memberships work the same way.</p>
+    <p><strong>3. PayPal</strong> — create a subscription button in your PayPal dashboard and paste the link in.</p>
+    <p>Delivery of the <code>UNLOCK_CODE</code> (defined in app.js) to subscribers is up to you; on the free plan the code is trivial to keep secret since nobody gets it until they pay.</p>`);
 };
+
+$('btn-upgrade').onclick = function(e){ e.preventDefault(); upgradeClick(); };
 
 $('btn-settings').onclick = showSettings;
 
@@ -562,6 +588,7 @@ function showSettings(){
     </div>
     <div style="margin-top:1.25rem">
       <p style="font-size:.8125rem;color:#6b7280">Plan: <strong>${plan.tier==='pro'?'Pro ✓':'Free'}</strong>${plan.tier==='free'?` — ${invoices.length}/${FREE_LIMIT} invoices used`:''}</p>
+      ${plan.tier==='free'?`<div class="field" style="margin-top:.75rem"><label>Have a Pro unlock code?</label><input id="m-unlock" placeholder="IP-PRO-XXXX"><button class="btn btn-primary btn-sm" onclick="doUnlock(document.getElementById('m-unlock').value)" style="margin-top:.5rem">Unlock Pro</button></div>`:''}
     </div>`;
   showModal(html);
   $('m-name').oninput = ()=>{ settings.fromName=$('m-name').value; saveSettings(); };
