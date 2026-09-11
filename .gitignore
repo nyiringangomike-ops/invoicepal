@@ -1,0 +1,13 @@
+# Dependencies / build artifacts
+node_modules/
+*.log
+.DS_Store
+Thumbs.db
+
+# Local netlify/vercel settings
+.netlify/
+.vercel/
+
+# Sensitive config
+.env
+*.env.local

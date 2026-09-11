@@ -1,0 +1,3 @@
+User-agent: *
+Allow: /
+Sitemap: https://invoicepal.github.io/sitemap.xml

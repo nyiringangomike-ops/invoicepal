@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>InvoicePal — Invoice Builder</title>
+<meta name="description" content="Create and download professional PDF invoices for free. No signup.">
+<meta name="robots" content="noindex">
+<link rel="icon" type="image/svg+xml" href="favicon.svg">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/style.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/jspdf-autotable@3.8.2/dist/jspdf.plugin.autotable.min.js"></script>
+</head>
+<body class="app">
+<header class="app-nav">
+  <div class="app-nav-inner">
+    <a class="brand" href="index.html"><span class="brand-mark">I</span> InvoicePal</a>
+    <div class="app-nav-right">
+      <span id="plan-badge" class="plan-badge">Free plan</span>
+      <a id="btn-upgrade" class="btn btn-primary btn-sm" href="#">Upgrade</a>
+      <button id="btn-settings" class="btn btn-ghost btn-sm">Settings</button>
+      <button id="btn-view" class="btn btn-ghost btn-sm" hidden>Back to invoices</button>
+    </div>
+  </div>
+</header>
+
+<main class="app-main">
+  <section id="list-view">
+    <div class="list-head">
+      <h1>Your invoices</h1>
+      <button id="btn-new" class="btn btn-primary">+ New Invoice</button>
+    </div>
+    <p id="plan-hint" class="plan-hint" hidden></p>
+    <div id="invoice-list" class="invoice-list"></div>
+    <div id="empty-state" class="empty-state">
+      <div class="empty-icon">📄</div>
+      <h3>No invoices yet</h3>
+      <p>Create your first professional invoice in under a minute.</p>
+      <button id="btn-new-empty" class="btn btn-primary">+ New Invoice</button>
+    </div>
+  </section>
+
+  <section id="editor-view" hidden>
+    <div class="editor-grid">
+      <div class="editor-form">
+        <div class="editor-head">
+          <h1>New invoice</h1>
+          <div class="editor-head-actions">
+            <button id="btn-delete" class="btn btn-danger" hidden>Delete</button>
+            <button id="btn-save" class="btn btn-primary">Save Invoice</button>
+          </div>
+        </div>
+
+        <div class="card editor-card">
+          <h2 class="sub">From — your business</h2>
+          <div class="field-row">
+            <div class="field"><label>Your name / business</label><input id="f-from-name" type="text" placeholder="Acme Studio"></div>
+            <div class="field"><label>Email</label><input id="f-from-email" type="email" placeholder="you@acme.com"></div>
+          </div>
+          <div class="field-row">
+            <div class="field"><label>Phone</label><input id="f-from-phone" type="text" placeholder="+1 555 000 0000"></div>
+            <div class="field"><label>Website / logo URL <span class="muted">(Pro)</span></label><input id="f-from-logo" type="text" placeholder="https://…/logo.png"></div>
+          </div>
+          <div class="field"><label>Address / details</label><input id="f-from-address" type="text" placeholder="123 Main St, New York, NY"></div>
+        </div>
+
+        <div class="card editor-card">
+          <h2 class="sub">Bill to — your client</h2>
+          <div class="field-row">
+            <div class="field"><label>Client name / business</label><input id="f-to-name" type="text" placeholder="Client Co."></div>
+            <div class="field"><label>Client email</label><input id="f-to-email" type="email" placeholder="client@email.com"></div>
+          </div>
+          <div class="field"><label>Client address</label><input id="f-to-address" type="text" placeholder="456 Oak Ave, San Francisco, CA"></div>
+        </div>
+
+        <div class="card editor-card">
+          <h2 class="sub">Line items</h2>
+          <div id="items-table" class="items-table"></div>
+          <button id="btn-add-item" class="btn btn-ghost btn-sm">+ Add line item</button>
+        </div>
+
+        <div class="card editor-card">
+          <h2 class="sub">Details</h2>
+          <div class="field-row">
+            <div class="field"><label>Currency</label><select id="f-currency">
+              <option value="USD">USD — $</option><option value="EUR">EUR — €</option><option value="GBP">GBP — £</option>
+              <option value="CAD">CAD — C$</option><option value="AUD">AUD — A$</option><option value="INR">INR — ₹</option>
+              <option value="JPY">JPY — ¥</option><option value="CNY">CNY — ¥</option><option value="BRL">BRL — R$</option>
+              <option value="MXN">MXN — MX$</option><option value="CHF">CHF</option><option value="NZD">NZD — NZ$</option>
+              <option value="SGD">SGD — S$</option><option value="SEK">SEK — kr</option><option value="NOK">NOK — kr</option>
+              <option value="DKK">DKK — kr</option><option value="PLN">PLN — zł</option><option value="AED">AED</option>
+            </select></div>
+            <div class="field"><label>Tax rate (%)</label><input id="f-tax" type="number" min="0" step="0.01" value="0"></div>
+            <div class="field"><label>Discount (%)</label><input id="f-discount" type="number" min="0" step="0.01" value="0"></div>
+            <div class="field"><label>Due in (days)</label><input id="f-due" type="number" min="0" value="14"></div>
+          </div>
+          <div class="field"><label>Notes / payment instructions</label><textarea id="f-notes" rows="2" placeholder="Payment due within 14 days. Thank you for your business!"></textarea></div>
+        </div>
+      </div>
+
+      <aside class="editor-side">
+        <div class="card summary-card">
+          <h2 class="sub">Summary</h2>
+          <div class="summary-row"><span>Invoice #</span><span id="s-number">INV-0001</span></div>
+          <div class="summary-row"><span>Subtotal</span><span id="s-subtotal">$0.00</span></div>
+          <div class="summary-row" id="s-discount-row" hidden><span>Discount</span><span id="s-discount"></span></div>
+          <div class="summary-row" id="s-tax-row" hidden><span>Tax</span><span id="s-tax"></span></div>
+          <div class="summary-row total"><span>Total due</span><span id="s-total">$0.00</span></div>
+        </div>
+        <div class="card summary-card">
+          <div class="field"><label>Status</label><select id="f-status"><option value="unpaid">Unpaid</option><option value="paid">Paid</option><option value="draft">Draft</option></select></div>
+        </div>
+      </aside>
+    </div>
+  </section>
+</main>
+
+<div id="print-area" class="print-area"></div>
+
+<div id="modal" class="modal-overlay" hidden>
+  <div class="modal" id="modal-box">
+    <button id="modal-close" class="modal-close" aria-label="Close">×</button>
+    <div id="modal-content"></div>
+  </div>
+</div>
+
+<script src="js/app.js"></script>
+</body>
+</html>
