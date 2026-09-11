@@ -330,7 +330,7 @@ function renderPrintHTML(inv){
     </div>
     <div style="clear:both"></div>
     ${inv.notes?`<div class="pi-notes">${esc(inv.notes)}</div>`:''}
-    ${showWatermark?`<div class="pi-free-badge">Created with InvoicePal — invoicepal.example.com</div>`:''}
+    ${showWatermark?`<div class="pi-free-badge">Created with InvoicePal — invoicepal.net</div>`:''}
   </div>`;
 }
 

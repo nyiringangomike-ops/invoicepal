@@ -1,41 +1,40 @@
-# InvoicePal — Invoice Generator SaaS (MVP)
+# InvoicePal — Invoice Generator SaaS (LIVE)
 
-A complete, deployable micro-SaaS: create professional invoices, download them as
-print-quality PDFs, all client-side. Free/Pro freemium model with Stripe billing.
-Zero backend, zero build tools — pure HTML/CSS/JS.
+A complete, deployable micro-SaaS: create professional invoices, download real
+PDF files in one click, all client-side. Free/Pro freemium model with Stripe
+billing. Zero backend, zero build tools — pure HTML/CSS/JS.
+
+**Live site:** https://nyiringangomike-ops.github.io/invoicepal/
+**Repo:** https://github.com/nyiringangomike-ops/invoicepal
 
 ```
-index.html        — landing page (features, pricing, FAQ)
+index.html        — landing page (features, pricing, FAQ, testimonials)
 app.html          — the invoice builder app
 css/style.css     — all styling incl. print styles
-js/app.js         — app logic (data, plans, PDF, settings)
-js/landing.js     — landing page animations
+js/app.js         — app logic (data, plans, PDF via jsPDF, settings)
+js/landing.js     — landing page animations + exit-intent popup
+favicon.svg        — brand icon
+og-image.png       — social share image (1200x630)
+robots.txt, sitemap.xml, 404.html — SEO essentials
 ```
 
 ---
 
-## 1. Deploy it (free, ~5 minutes)
+## 1. Deploy it (already done)
 
-### Option A — Netlify Drop (fastest, no account needed to test)
-1. Go to https://app.netlify.com/drop
-2. Drag the whole project folder into the page. Netlify uploads and gives you a
-   live URL instantly (e.g. `invoicepal.netlify.app`).
-3. Rename the site: **Site settings → Site details → Change site name**.
+The site is deployed and live on **GitHub Pages**:
+`https://nyiringangomike-ops.github.io/invoicepal/`
 
-### Option B — Vercel
-1. Install Git (https://git-scm.com) then:
-   ```
-   git init
-   git add -A
-   git commit -m "Init InvoicePal"
-   ```
-2. Go to https://vercel.com/new → import the repo → deploy.
+To redeploy after edits: commit and push to `main` — GitHub Pages rebuilds
+automatically (needs no setup; each push triggers a build).
 
-### Option C — GitHub Pages
-1. Create a repo, upload files, enable **Settings → Pages → main branch**.
-2. Your site: `https://<username>.github.io/<repo>/`.
+> Note: because the repo lives at `/invoicepal` (not a username repo), the app
+> runs from `https://.../invoicepal/`. Everything uses relative links, so it
+> also works from a custom domain later. To move to a custom domain, add a
+> `CNAME` file with your domain and set it in GitHub Pages settings.
 
-> Uses `window.print()` for PDF export, so it works on any static host with no backend.
+> Uses jsPDF for real one-click PDF downloads (fallback: print-to-PDF), so it
+> works on any static host with no backend.
 
 ---
 
@@ -50,11 +49,11 @@ js/landing.js     — landing page animations
    https://your-site-url/app.html?upgrade=success
    ```
 6. **Create link**, then copy the `checkout.stripe.com` URL.
-7. Open `js/app.js` and replace the placeholder:
+7. Open `js/app.js` and replace the placeholder with the real URL:
    ```js
    const STRIPE_URL = '#';  // →  const STRIPE_URL = 'https://buy.stripe.com/yourlink';
    ```
-8. Redeploy (Netlify/Vercel re-upload the changed file).
+8. Commit & push — GitHub Pages redeploys automatically.
 
 Now the **Upgrade** button makes a real $9/mo purchase; after paying, customers land
 back on the app unlocked (`Pro ✓`, unlimited invoices, no watermark).
