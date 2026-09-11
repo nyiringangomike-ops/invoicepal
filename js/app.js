@@ -116,6 +116,28 @@ function renderList(){
 
 function esc(s){ const d=document.createElement('div'); d.textContent=s; return d.innerHTML; }
 
+function seedDemo(){
+  const demo = {
+    id: uid(),
+    number: 'INV-0001',
+    createdAt: new Date().toISOString(),
+    from:{name:'Acme Studio',email:'hello@acme.co',phone:'+1 555 0100',address:'100 Market St, San Francisco, CA',logo:''},
+    to:{name:'Client Co.',email:'billing@clientco.com',address:'200 Oak Ave, Austin, TX'},
+    items:[
+      {desc:'Website design & build',qty:1,rate:1200},
+      {desc:'Hosting setup',qty:1,rate:60},
+      {desc:'Revisions (2 rounds)',qty:2,rate:40}
+    ],
+    taxRate:0, discount:0, currency:'USD', dueDays:14,
+    notes:'Payment due within 14 days. Thank you for your business!',
+    status:'unpaid'
+  };
+  invoices = [demo];
+  saveInvoices();
+  showModal(`<h2>Here's a sample invoice</h2><p>Edit any field, add rows, then hit <strong>Download PDF</strong> to see the output. This is a live demo — everything works.</p><button class="btn btn-primary" onclick="closeModal()">Explore it</button>`);
+  openEditor(demo.id);
+}
+
 function newInvoice(){
   if(isOverLimit()){
     showModal(`<h2>Free plan limit reached</h2><p>You've created ${FREE_LIMIT} invoices on the free plan. Upgrade to Pro for unlimited invoices, no watermark, and more features.</p><a class="btn btn-primary" href="${STRIPE_URL}">Upgrade to Pro — $9/mo</a>`);
@@ -330,7 +352,7 @@ function renderPrintHTML(inv){
     </div>
     <div style="clear:both"></div>
     ${inv.notes?`<div class="pi-notes">${esc(inv.notes)}</div>`:''}
-    ${showWatermark?`<div class="pi-free-badge">Created with InvoicePal — invoicepal.net</div>`:''}
+    ${showWatermark?`<div class="pi-free-badge">Created with InvoicePal — nyiringangomike-ops.github.io/invoicepal</div>`:''}
   </div>`;
 }
 
@@ -594,6 +616,11 @@ $('modal-close').onclick = closeModal;
 
 // init
 load();
+if(new URLSearchParams(location.search).get('demo')==='1'){
+  seedDemo();
+  renderList();
+  return;
+}
 checkUpgrade();
 renderPlanBadge();
 if(location.search.indexOf('invoice=')>-1){
